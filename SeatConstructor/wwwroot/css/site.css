@@ -1,0 +1,299 @@
+﻿/* Please see documentation at https://docs.microsoft.com/aspnet/core/client-side/bundling-and-minification
+for details on configuring this project to bundle and minify static web assets. */
+
+a.navbar-brand {
+    white-space: normal;
+    text-align: center;
+    word-break: break-all;
+}
+
+/* Provide sufficient contrast against white background */
+a {
+    color: #0366d6;
+}
+
+.btn-primary {
+    color: #fff;
+    background-color: #1b6ec2;
+    border-color: #1861ac;
+}
+
+.nav-pills .nav-link.active, .nav-pills .show > .nav-link {
+    color: #fff;
+    background-color: #1b6ec2;
+    border-color: #1861ac;
+}
+
+/* Sticky footer styles
+-------------------------------------------------- */
+html {
+    font-size: 14px;
+}
+
+@media (min-width: 768px) {
+    html {
+        font-size: 16px;
+    }
+}
+
+.border-top {
+    border-top: 1px solid #e5e5e5;
+}
+
+.border-bottom {
+    border-bottom: 1px solid #e5e5e5;
+}
+
+.box-shadow {
+    box-shadow: 0 .25rem .75rem rgba(0, 0, 0, .05);
+}
+
+button.accept-policy {
+    font-size: 1rem;
+    line-height: inherit;
+}
+
+/* Sticky footer styles
+-------------------------------------------------- */
+html {
+    position: relative;
+    min-height: 100%;
+}
+
+h4 {
+    margin-bottom: 0;
+}
+
+@import url('https://fonts.googleapis.com/css2?family=Montserrat&display=swap');
+
+body {
+    background-color: #f8f8f8;
+    background-image: url(../Images/Background.png);
+    font-family: 'Montserrat' !important, sans-serif;
+}
+
+.body-container {
+    padding-left: 0px;
+    padding-right: 0px;
+}
+
+.FlexContainer {
+    width: 100%;
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+}
+
+.Scene3D_Area {
+    position: relative;
+    overflow: hidden;
+    flex: 1 0;
+    flex-basis: 50%;
+    min-width: 375px;
+    aspect-ratio: 1 / 1;
+    background: rgba(91,91,91,0.2);
+}
+
+.Scene3D_container {
+    position: relative;
+    overflow: hidden;
+    flex: 1 0;
+    flex-basis: 50%;
+    min-width: 375px;
+    aspect-ratio: 1 / 1;
+}
+
+/*For loading img*/
+.centered {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    -webkit-transform: translate(-50%, -50%);
+    -moz-transform: translate(-50%, -50%);
+    -ms-transform: translate(-50%, -50%);
+    -o-transform: translate(-50%, -50%);
+    transform: translate(-50%, -50%);
+}
+
+.OptionsArea {
+    position: relative;
+    overflow-y: visible;
+    flex: 1 0;
+    flex-basis: 50%;
+    min-width: 375px;
+    background-color: rgba(51,45,108,0.8);
+    aspect-ratio: 1 / 1;
+}
+
+.OptionsContainer {
+    padding: 0 30px 0 30px;
+    overflow: overlay;
+}
+
+.ContainerLabel {
+    user-select: none;
+    position: sticky;
+    top: -1px;
+    padding-bottom: 4px;
+    margin-bottom: 0;
+    color: whitesmoke;
+}
+
+.Option {
+    width: 100%;
+    margin: 30px 0 0 0;
+    border-bottom: 1px inset;
+    display: table;
+}
+
+.DropDownSelect {
+    width: inherit;
+    background-color: #bfcede;
+    user-select: none;
+    min-height: 35px;
+    border: 0;
+    font-size: 16px;
+    color: #151515;
+    border-radius: 3px 3px 0px 0px;
+    cursor: pointer;
+    margin-bottom: -1px;
+    outline: none;
+}
+
+.OptionTypeLabel {
+    width: 50%;
+    user-select: none;
+    text-align: left;
+    font-size: 16px;
+    margin-bottom: 0;
+    color: whitesmoke;
+    display: table-cell;
+    vertical-align: bottom;
+    word-wrap: break-word;
+    word-break: break-word;
+}
+
+.sp-scroll-up {
+    display: none;
+    position: fixed;
+    bottom: 30px;
+    right: 30px;
+    width: 36px;
+    height: 36px;
+    line-height: 36px;
+    text-align: center;
+    font-size: 16px;
+    color: #fff;
+    background: #333;
+    border-radius: 3px;
+    z-index: 1000;
+    cursor: pointer;
+}
+
+.SeatTumb {
+    object-fit: cover;
+    cursor: pointer;
+    height: 200px;
+    max-width: 150px;
+    border-radius: 10px;
+    margin-bottom: 10px;
+}
+
+    .SeatTumb:hover {
+        transform: scale(1.02);
+    }
+
+.ImgWithLabelDiv {
+    margin-top: 20px;
+    margin-bottom: 10px;
+    width: 150px;
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+    justify-content: flex-start;
+    align-items: center
+}
+
+.Client-button {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    border: none;
+    cursor: pointer;
+    transition: .1s;
+    outline: none;
+    border-radius: 3px;
+    user-select: none;
+    color: whitesmoke;
+    box-shadow: 0 5px 0 rgba(200, 150, 10, 0.8);
+    /*background: #cecece;*/
+    background: linear-gradient(rgba(251, 235, 34, 0.8), rgba(238, 188, 47, 0.8));
+}
+
+    .Client-button:hover {
+        color: #484848;
+        box-shadow: 0 5px 0 rgba(208, 158, 17, 0.8);
+        /*background: #cecece;*/
+        background: linear-gradient(rgba(251, 235, 34, 1), rgba(238, 188, 47, 1));
+    }
+
+    .Client-button:active {
+        color: whitesmoke;
+        box-shadow: 0 0px 0;
+        /*background: #9a9a9a;*/
+        background: linear-gradient(rgba(251, 235, 34, 0.8), rgba(238, 188, 47, 0.8));
+        margin-top: 5px;
+        margin-bottom: -5px;
+    }
+
+.Client-button-Container {
+    height: 100px;
+    margin: 10px 5px 10px 5px;
+    display: grid;
+    grid-template-columns: 2fr 1fr;
+    grid-gap: 3px;
+    justify-content: space-between;
+}
+
+.disabled {
+    pointer-events: none;
+    opacity: 0.5;
+}
+
+.error {
+    user-select: none;
+    color: red;
+    font-size: 14px;
+    margin-bottom: 0.5rem;
+}
+
+/* HideOnVerticalView */
+@media (min-width: 991px) {
+    .HideOnVerticalView {
+        display: none;
+    }
+
+    .Client-button-Container {
+        grid-template-columns: 1fr;
+    }
+}
+
+
+.title {
+    align-items: center;
+    justify-content: space-between;
+    margin-top: 25px;
+    box-shadow: 0 0 4px 0 rgb(0 0 0 / 10%);
+    width: 100%;
+    user-select: none;
+    position: sticky;
+    top: -1px;
+    background-color: white;
+    z-index: 1000;
+    padding: 20px 0;
+}
+
+.selected {
+    background-color: rgb(235, 235, 235);
+    box-shadow: 0 0 10px rgb(91, 91, 91);
+}

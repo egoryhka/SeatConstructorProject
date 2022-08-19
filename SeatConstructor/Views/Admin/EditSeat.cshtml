@@ -1,0 +1,283 @@
+﻿@model SeatConstructor.Models.DB.Seat
+
+@{
+    ViewData["Title"] = Model.Name + " - Редактирование";
+}
+<link rel="stylesheet" href="~/css/admin.css" />
+
+<div>
+    <h4 class="text-center">@Model.Name</h4>
+
+    <!-- Сцена 3D -->
+    <div id="3D_Scene" class="Scene3D_container" style="height:550px; width:100%">
+        <img id="LoadingModelsImg" hidden src="~/Images/RNSD.gif" style="pointer-events: none; user-select: none;" class="centered" />
+    </div>
+
+    <div style="display:inline">
+        <input type="text" id="newName" placeholder="название" value="@Model.Name" />
+        <input type="text" id="newCode" placeholder="код" value="@Model.Code" />
+        <input type="text" id="newPostfix" placeholder="постфикс" value="@Model.Postfix" />
+
+        <input style="background:rgb(151 87 87);" type="button" value="Удалить" onclick="RemoveSeat('@Model.Id')">
+        <input style="background:rgb(103 139 91);" type="button" value="Сохранить" onclick="ApplyChanges('@Model.Id')">
+    </div>
+
+
+    <!-- Настройка расположения модификации -->
+    <div style="margin:10px; background-color:whitesmoke; border: solid 2px;">
+        <label for="xOffset" class="d-block">
+            xOffset
+            <input style="width:100%" type="range" id="xOffset" value="0" min="-5" max="5" step="0.025"
+                   oninput="UpdateModPosition()" />
+        </label>
+        <label for="yOffset" class="d-block">
+            yOffset
+            <input style="width:100%" type="range" id="yOffset" value="0" min="-5" max="5" step="0.025"
+                   oninput="UpdateModPosition()" />
+        </label>
+        <label for="zOffset" class="d-block">
+            zOffset
+            <input style="width:100%" type="range" id="zOffset" value="0" min="-5" max="5" step="0.025"
+                   oninput="UpdateModPosition()" />
+        </label>
+
+        <input type="button" value="Отмена" onclick="CancelModPlacement()" />
+        <input type="button" value="Сохранить" onclick="SaveModPlacement()" />
+        <input type="button" value="Сброс" onclick="SetDefaultModPlacement()" />
+
+    </div>
+
+
+    <!-- Модификации  -->
+    <div>
+
+        @{
+            foreach (var type in ViewBag.ModTypes)
+            {
+                <div style="margin-bottom:50px; border:solid 2px;">
+                    <h4>@type.Name</h4>
+                    <table class="table-bordered adminTable">
+                        <thead>
+                            <tr style="text-align:left">
+                                <th scope="col" style="width:16.67%">Имя</th>
+                                <th scope="col" style="width:16.67%">Код</th>
+                                <th scope="col" style="width:16.67%">Описание</th>
+                                <th scope="col" style="width:16.67%">Симметрия</th>
+                                <th scope="col" style="width:16.67%">Настроить</th>
+                                <th scope="col" style="width:16.67%">Удалить</th>
+                            </tr>
+                        </thead>
+                        <tbody id="@type.Name">
+                        </tbody>
+                    </table>
+
+                    <div style="display:inline;">
+                        <input type="text" id="@(type.Name+"ModName")" placeholder="Имя" />
+                        <input type="text" id="@(type.Name+"Code")" placeholder="Код" />
+                        <textarea type="text" id="@(type.Name+"Description")" placeholder="Описание"></textarea>
+                        <input type="file" accept=".glb" required id="@(type.Name+"Model")" />
+
+                        <input type="button" value="Добавить" onclick='
+                        let type = @Html.Raw(Json.Serialize(type));
+                        AddMod(type.id,
+                               document.getElementById(type.name + "ModName").value,
+                               document.getElementById(type.name + "Code").value,
+                               document.getElementById(type.name + "Description").value,
+                               document.getElementById(type.name + "Model").files[0]);' />
+                    </div>
+                </div>
+            }
+        }
+
+    </div>
+</div>
+
+
+
+<script src="~/js/three.min.js"></script>
+<script src="~/js/GLTFLoader.js"></script>
+<script src="~/js/OrbitControls.js"></script>
+<script src="~/js/AkaLinq.js"></script>
+<script src="~/js/3D.js"></script>
+
+<script>
+
+    var sceneContainer = document.getElementById('3D_Scene');
+    init3Dscene(sceneContainer);
+
+
+    var seat= @Html.Raw(Json.Serialize(Model));
+    loadSeat(seat);
+
+    var modTypes = @Html.Raw(Json.Serialize(ViewBag.ModTypes));
+
+    function RemoveSeat(seatId) {
+        $.post("/Admin/RemoveSeat", { seatId: seatId }).done(function () {
+            document.location.href = "/Admin/";
+        });
+    }
+
+    function ApplyChanges(seatId) {
+        $.post("/Admin/ApplyChanges", { seatId: seatId, newName: newName.value, newCode: newCode.value, newPostfix: newPostfix.value }).done(function () {
+            document.location.href = "/Admin/EditSeat/" + seatId;
+        });
+    }
+
+</script>
+
+<script>
+    function RefreshMods() {
+        $.post("/Admin/RefreshMods", { seatId: seat.id })
+            .done(function (mods) {
+
+                $.each(modTypes, function (i, modType) {
+
+                    let modsOfTypeTable = document.getElementById(modType.name);
+                    modsOfTypeTable.innerHTML = '';
+
+                    $.each(mods, function (i, mod) {
+
+                        if (mod.typeId === modType.id) {
+                            var row = '<tr>' +
+                                '<td>' + '<input type="text" id="' + 'modName' + mod.id + '"' + 'onchange="EditModName(' + mod.id + ',' + 'modName' + mod.id + '.value' + ')"' + 'value="' + mod.name + '"> </input>' + '</td>' +
+                                '<td>' + '<input type="text" id="' + 'modCode' + mod.id + '"' + 'onchange="EditModCode(' + mod.id + ',' + 'modCode' + mod.id + '.value' + ')"' + 'value="' + mod.code + '"> </input>' + '</td>' +
+                                '<td>' + '<textarea type="text" placeholder="Описание" id="' + 'modDescription' + mod.id + '"' + 'onchange="EditModDescription(' + mod.id + ',' + 'modDescription' + mod.id + '.value' + ')"' + '">' + (mod.description ?? "") + '</textarea>' + '</td>' +
+                                '<td>' + '<input type="checkbox" id="' + 'modMirror' + mod.id + '"' + 'onchange="EditModMirror(' + mod.id + ',' + 'modMirror' + mod.id + '.checked)"' + (mod.mirror ? 'checked' : '') + '> </input>' + '</td>' +
+                                "<td> <button onclick='" + 'EditModPlacement(' + JSON.stringify(mod) + ')' + "'" + '> Настроить </button> </td>' +
+                                '<td> <button onclick="RemoveMod(' + mod.id + ')"> Удалить </button> </td>' +
+                                '</tr>';
+
+                            modsOfTypeTable.innerHTML += row;
+                        }
+                    });
+                });
+            });
+    }
+
+    function AddMod(typeId, name, code, description, file3d) {
+        let formData = new FormData();
+        formData.append("name", name);
+        formData.append("code", code);
+        formData.append("description", description);
+        formData.append("file3d", file3d);
+        formData.append("typeId", typeId);
+        formData.append("seatId", seat.id);
+
+        $.ajax(
+            {
+                url: "/Admin/AddMod",
+                data: formData,
+                processData: false,
+                contentType: false,
+                type: "POST",
+                success: function (data) {
+                    RefreshMods();
+                }
+            }
+        );
+    }
+
+    function EditModName(modId, name) {
+        $.post("/Admin/EditModName", { modId: modId, seatId: seat.id, name: name }).done(function () {
+            RefreshMods();
+        });
+    }
+
+    function EditModCode(modId, code) {
+        $.post("/Admin/EditModCode", { modId: modId, code: code }).done(function () {
+            RefreshMods();
+        });
+    }
+
+    function EditModMirror(modId, mirror) {
+        $.post("/Admin/EditModMirror", { modId: modId, mirror: mirror }).done(function () {
+            RefreshMods();
+        });
+    }
+
+    function EditModDescription(modId, description) {
+        $.post("/Admin/EditModDescription", { modId: modId, description: description }).done(function () {
+            RefreshMods();
+        });
+    }
+
+    function RemoveMod(modId) {
+        $.post("/Admin/RemoveMod", { modId: modId }).done(function () {
+            RefreshMods();
+            clearAllMods();
+            xOffset.value = 0;
+            yOffset.value = 0;
+            zOffset.value = 0;
+        });
+    }
+
+    ////--------------------------------MOD-CONFIG-------------------------------------
+    var configureModId;
+
+    function EditModPlacement(mod) {
+        clearAllMods();
+        configureModId = mod.id;
+        loadMod(mod);
+        loadCurrentModPlacement(mod);
+    }
+
+    function loadCurrentModPlacement(mod) {
+        xOffset.value = mod.offsetX;
+        yOffset.value = mod.offsetY;
+        zOffset.value = mod.offsetZ;
+    }
+
+    function UpdateModPosition() {
+        if (loadedMods.length == 0) return;
+
+        loadedMods[0].position.set(xOffset.value, zOffset.value, yOffset.value);
+        if (loadedMods[1] != null) {
+            loadedMods[1].position.set(-xOffset.value, zOffset.value, yOffset.value);
+        }
+    }
+
+    function SaveModPlacement() {
+        $.post("/Admin/SaveModPlacement", { modId: configureModId, xOffset: xOffset.value, yOffset: yOffset.value, zOffset: zOffset.value }).done(function () {
+            RefreshMods();
+            UpdateModPosition();
+        });
+    }
+
+    function SetDefaultModPlacement() {
+        $.post("/Admin/SetDefaultModPlacement", { modId: configureModId })
+            .done(function () {
+                xOffset.value = 0;
+                yOffset.value = 0;
+                zOffset.value = 0;
+
+                RefreshMods();
+                UpdateModPosition();
+            });
+    }
+
+    function CancelModPlacement() {
+        $.post("/Admin/CancelModPlacement", { modId: configureModId })
+            .done(function (data) {
+                if (data != null) {
+                    console.log(data);
+
+                    xOffset.value = data[0];
+                    yOffset.value = data[1];
+                    zOffset.value = data[2];
+                }
+                RefreshMods();
+                UpdateModPosition();
+            });
+    }
+
+
+
+
+    //После загрузки
+    document.addEventListener('DOMContentLoaded', function () {
+        RefreshMods();
+    });
+
+
+</script>
+

@@ -1,0 +1,34 @@
+﻿.infobuttonContainer {
+    display: table-cell;
+    text-align: right;
+    width: 70%;
+    vertical-align: bottom;
+}
+
+/*Контейнер подсказок*/
+.infobutton {
+    position: relative;
+    cursor: pointer;
+    display: inline-flex;
+    justify-content: center;
+    opacity: 1;
+    user-select: none;
+    font-size: 16px;
+    align-self: center;
+    width: 25px;
+    height: 25px;
+    background-color: #bfcede;
+    border-radius: 50%;
+    text-align: center;
+    font-weight: 700;
+    margin: 0px 10px 0px 10px;
+    z-index: 10;
+}
+
+    .infobutton:hover {
+        background-color: #a6b1bd;
+    }
+
+    .infobutton:active {
+        background-color: #9099a3;
+    }

@@ -1,0 +1,98 @@
+﻿@*
+    For more information on enabling MVC for empty projects, visit https://go.microsoft.com/fwlink/?LinkID=397860
+*@
+@{
+}
+
+
+<div>
+
+    <table class="table-bordered adminTable">
+        <thead>
+            <tr style="text-align:left">
+                <th scope="col" style="width:25%">Название</th>
+                <th scope="col" style="width:25%">Порядок</th>
+                <th scope="col" style="width:25%"></th>
+                <th scope="col" style="width:25%"></th>
+            </tr>
+        </thead>
+        <tbody id="ModTypes">
+        </tbody>
+    </table>
+
+
+    <input type="text" id="newTypeName" /> <input type="button" value="Добавить" onclick="AddModType()" />
+</div>
+
+
+
+
+
+
+
+
+
+
+
+<script>
+
+    var ModTypes = document.getElementById('ModTypes'); //Таблица всех типов
+
+
+    //--------------------------------MOD-TYPES-------------------------------------
+    function AddModType() {
+        $.post("/Admin/AddModType", { name: newTypeName.value }).done(function () {
+            RefreshModTypes();
+        });
+    }
+
+    function EditModType(modTypeId, name) {
+        $.post("/Admin/EditModType", { modTypeId: modTypeId, name: name }).done(function () {
+            RefreshModTypes();
+        });
+    }
+
+    function RemoveModType(modTypeId) {
+        $.post("/Admin/RemoveModType", { modTypeId: modTypeId }).done(function () {
+            RefreshModTypes();
+        });
+    }
+
+    function RefreshModTypes() {
+        $.post("/Admin/RefreshModTypes", {})
+            .done(function (types) {
+                ModTypes.innerHTML = '';
+
+                $.each(types, function (i, type) {
+                    let row = '<tr>' +
+                        '<td>' + '<input type="text" id="' + 'modType' + type.id + '"' + 'onchange="EditModType(' + type.id + ',' + 'modType' + type.id + '.value' + ')"' + 'value="' + type.name + '"> </input>' + '</td>' +
+                        '<td>' + type.positionInSummaryCode + '</td>' +
+
+                        '<td> <button onclick="MoveTypeUp(' + type.id + ')"> ▲ </button>' +
+                        '<button onclick="MoveTypeDown(' + type.id + ')"> ▼ </button> </td>' +
+
+                        '<td> <button onclick="RemoveModType(' + type.id + ')"> Удалить </button> </td>' +
+                        '</tr>';
+                    ModTypes.innerHTML += row;
+                });
+            });
+    }
+
+    function MoveTypeUp(modTypeId) {
+        $.post("/Admin/MoveTypeUp", { modTypeId: modTypeId }).done(function () {
+            RefreshModTypes();
+        });
+    }
+
+    function MoveTypeDown(modTypeId) {
+        $.post("/Admin/MoveTypeDown", { modTypeId: modTypeId }).done(function () {
+            RefreshModTypes();
+        });
+    }
+
+    //После загрузки
+    document.addEventListener('DOMContentLoaded', function () {
+        RefreshModTypes();
+    });
+
+</script>

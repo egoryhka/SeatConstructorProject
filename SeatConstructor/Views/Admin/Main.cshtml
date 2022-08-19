@@ -1,0 +1,133 @@
+﻿@{
+    ViewData["Title"] = "Панель администратора";
+}
+<link rel="stylesheet" href="~/css/admin.css" />
+
+<div class="text-center">
+    <div style="width:100%; display:inline-flex; justify-content: space-between;">
+        <h1 class="display-4">Панель администратора</h1>
+        <input type="button" onclick="location.href = '/Admin/ModTypes/'" value="Настроить Типы" class="btn" />
+        <input type="button" onclick="location.href = '@Url.Action("LogOut","Account")'" value="Выйти" class="btn" />
+    </div>
+
+
+    <div>
+        <div>
+            <table class="table-bordered adminTable">
+                <thead>
+                    <tr>
+                        <th scope="col" style="width:20%"></th>
+                                                      
+                        <th scope="col" style="width:20%">Название</th>
+                        <th scope="col" style="width:20%">Код</th>
+                        <th scope="col" style="width:20%">Постфикс</th>
+                        <th scope="col" style="width:20%"></th>
+                    </tr>
+                </thead>
+                <tbody id="Seats">
+                </tbody>
+            </table>
+
+            <div style="display:inline-flex; margin-top:5px; justify-content: space-between; width:100%">
+                <input style="max-width:160px" type="text" placeholder="Название" id="newSeatName" />
+                <input style="max-width:160px" type="text" placeholder="Код" id="newSeatCode" />
+                <input style="max-width:160px" type="text" placeholder="Постфикс" id="newSeatPostfix" />
+
+                <label style="width:100%; margin-top:2px" for="seat3DModel" class="adminButton">
+                    Выберите 3D модель
+                    <input type="file" accept=".glb" required id="seat3DModel" style="display:none" />
+                </label>
+
+                <label style="width:100%; margin-top:2px" for="seatImage" class="adminButton">
+                    Выберите изображение
+                    <input type="file" accept=".png,.jpg,.jpeg,.gif,.svg" required id="seatImage" style="display:none" />
+                </label>
+
+                <input style="width:100%; margin-top:2px" type="button" value="Добавить" onclick="AddSeat(newSeatName.value, newSeatCode.value, newSeatPostfix.value, seat3DModel.files[0], seatImage.files[0])">
+            </div>
+        </div>
+
+
+    </div>
+
+</div>
+
+
+
+<script src="~/js/three.min.js"></script>
+<script src="~/js/GLTFLoader.js"></script>
+<script src="~/js/OrbitControls.js"></script>
+<script src="~/js/AkaLinq.js"></script>
+<script src="~/js/3D.js"></script>
+
+
+<script>
+
+    var currentSeatId = 0;
+
+    var Seats = document.getElementById('Seats'); //Таблица сидений
+
+    var Mods = document.getElementById('Mods'); //Таблица всех модов
+    var ModTypeSelect = document.getElementById('ModTypeSelect'); //Выбор типа нового мода
+
+    var ModsForSeat = document.getElementById('ModsForSeat'); //Таблица модов для выбранного сиденья
+
+    function OpenSeatConfig(seat) {
+        currentSeatId = seat.Id;
+        loadSeat(seat);
+        RefreshAvaliableMods();
+    }
+
+    //--------------------------------SEATS-------------------------------------
+    function AddSeat(name, code, postfix, file3d, fileImg) {
+
+        var formData = new FormData();
+        formData.append("name", name);
+        formData.append("code", code);
+        formData.append("postfix", postfix);
+
+        formData.append("file3d", file3d);
+        formData.append("fileImg", fileImg);
+
+        $.ajax(
+            {
+                url: "/Admin/AddSeat",
+                data: formData,
+                processData: false,
+                contentType: false,
+                type: "POST",
+                success: function (data) {
+                    RefreshSeats();
+                }
+            }
+        );
+    }
+
+    function RefreshSeats() {
+        $.post("/Admin/RefreshSeats", {})
+            .done(function (seats) {
+                Seats.innerHTML = '';
+                $.each(seats, function (i, seat) {
+                    var row = '<tr>' +
+                        '<td>' + '<img src="'+ seat.pathToImage+'" width=100 height=100 alt="No Img" />' + '</td>' +
+                        '<td>' + seat.name + '</td>' +
+                        '<td>' + seat.code + '</td>' +
+                        '<td>' + (seat.postfix ?? '') + '</td>' +
+                        '<td>' + "<input type='button' onclick='location.href = " + '"/Admin/EditSeat/' + seat.id + '"' + "' value='Настроить' />" + '</td>' +
+                        '</tr>';
+                    Seats.innerHTML += row;
+                });
+            });
+    }
+
+
+    //После загрузки
+    document.addEventListener('DOMContentLoaded', function () {
+        RefreshSeats();
+    });
+
+
+
+
+</script>
+

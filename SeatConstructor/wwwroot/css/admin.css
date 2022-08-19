@@ -1,0 +1,31 @@
+﻿.adminTable {
+    width:100%;
+}
+
+    .adminTable th {
+        text-align: center;
+        vertical-align: middle;
+        background-color: rgb(238, 238, 238);
+        word-wrap: break-word;
+        word-break: break-all;
+    }
+
+    .adminTable tr td {
+        text-align: left;
+        word-wrap: break-word;
+        word-break: break-all;
+    }
+
+
+.adminButton {
+    margin: 0;
+    background-color: darkslategrey;
+    color: white;
+    cursor: pointer;
+    text-align: center;
+}
+
+    .adminButton:hover {
+        background-color: lightgray;
+        color: black;
+    }

@@ -1,0 +1,54 @@
+﻿<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>@ViewData["Title"] - SeatConstructor</title>
+    <link rel="icon" type="image/x-icon" href="/Images/Icon.png">
+    <link rel="stylesheet" href="~/lib/bootstrap/dist/css/bootstrap.min.css" />
+    <link rel="stylesheet" href="~/css/site.css" />
+    <link rel="stylesheet" href="~/css/infoButton.css" />
+    <link rel="stylesheet" href="~/css/modal.css" />
+    <link rel="stylesheet" href="~/css/loading.css" />
+
+</head>
+<body>
+    <div class="container body-container">
+        <main role="main">
+            <div id="to-top" class="sp-scroll-up" aria-label="Scroll Up">▲</div>
+            @RenderBody()
+        </main>
+        @if (User.IsInRole("admin") && User.Identity.IsAuthenticated)
+        {
+            <footer style="margin-top:40px"></footer>
+        }
+    </div>
+
+    <script src="~/lib/jquery/dist/jquery.min.js"></script>
+    <script src="~/lib/bootstrap/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="~/js/site.js" asp-append-version="true"></script>
+    @await RenderSectionAsync("Scripts", required: false)
+</body>
+</html>
+
+
+@*Scroll Up*@
+<script>
+
+    document.documentElement.dataset.scroll = false;
+    
+    $(function () {
+        $(window).scroll(function () {
+            if ($(this).scrollTop() > 120) {
+                $('#to-top').fadeIn('fast');
+            } else {
+                $('#to-top').fadeOut('fast');
+            }
+        });
+
+        $('#to-top').click(function () {
+            $('body,html').animate({ scrollTop: 0 }, 250);
+        });
+    });
+
+</script>

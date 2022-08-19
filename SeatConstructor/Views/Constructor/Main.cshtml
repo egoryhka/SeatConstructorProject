@@ -1,0 +1,517 @@
+﻿@using SeatConstructor.Models.DB;
+@model SeatConstructor.Models.DB.Seat[]
+@{
+    ViewData["Title"] = "Конструктор сидений";
+}
+
+<div class="text-center">
+
+    <!-- Шапка -->
+    <div id="title" class="d-inline-flex display-4 title">
+        <a style="padding-left:15px;" href="https://sevada.ru/">
+            <img style="height: 50px; display:block" src="~/Images/Logo.png" alt="Севада" />
+        </a>
+
+        <h3 style="padding-right:15px; margin:0 0 0 15px; font-weight:bold;">Конструктор сидений</h3>
+    </div>
+
+
+    <!-- Выбор модели сиденья -->
+    <div id="Seats">
+
+        <!-- Карусель -->
+        <link rel="stylesheet" href="~/css/chief-slider.min.css">
+        <script defer src="~/js/chief-slider.min.js"></script>
+
+        <div class="slider" style="width:100%;">
+            <div class="slider__container">
+                <div class="slider__wrapper">
+                    <div class="slider__items" id="sliderItems">
+
+                        @if (Model.Length > 0)
+                        {
+                            <!-- Первое сиденье - выбрано -->
+                            <div class="slider__item">
+                                <!-- Контент слайда -->
+                                <div class="ImgWithLabelDiv">
+                                    <img src="@Model[0].PathToImage" class="SeatTumb selected" onclick='HighLight(this); SelectSeat(@Html.Raw(Json.Serialize(Model[0])));'>
+                                    <h5 style="font-size:initial">@Model[0].Name</h5>
+                                </div>
+                            </div>
+
+                            @for (int i = 1; i < Model.Length; i++)
+                            {
+                                <div class="slider__item">
+                                    <!-- Контент слайда -->
+                                    <div class="ImgWithLabelDiv">
+                                        <img src="@Model[i].PathToImage" class="SeatTumb" onclick='HighLight(this); SelectSeat(@Html.Raw(Json.Serialize(Model[i])));'>
+                                        <h5 style="font-size:initial">@Model[i].Name</h5>
+                                    </div>
+                                </div>
+                            }
+                        }
+
+                    </div>
+                </div>
+            </div>
+
+            <!-- Кнопки для перехода к предыдущему и следующему слайду -->
+            <a href="#" class="slider__control" data-slide="prev"></a>
+            <a href="#" class="slider__control" data-slide="next"></a>
+
+            <ol class="slider__indicators">
+                @for (int i = 0; i < Model.Length; i++)
+                {
+                    <li data-slide-to="@i"></li>
+                }
+            </ol>
+        </div>
+    </div>
+
+
+    <div class="FlexContainer" style="margin-bottom:60px">
+        <!-- Выбор модификации -->
+        <div id="OptionsArea" class="OptionsArea">
+            <h5 class="ContainerLabel" style="background-color:rgb(51,45,108) "> Доступные модификации</h5>
+
+            <div style="display:flex; justify-content:space-between; flex-direction:column; height:100%; ">
+                <div class="OptionsContainer">
+
+                    <div class="center">
+                        <div id="LoadingAvaliableModsImg" class="lds-ring">
+                            <div></div><div></div><div></div><div></div>
+                        </div>
+                    </div>
+
+                    <div id="AvaliableMods">
+
+                    </div>
+
+                </div>
+
+                <!-- Кнопка "ОТПРАВИТЬ" и, (если с телефона) - "ПОКАЗАТЬ" -->
+                <div class="Client-button-Container">
+                    <div class="Client-button disabled" id="SendStartButton">
+                        <h4 style="font-weight: bold; color:#212529">ОТПРАВИТЬ ЗАЯВКУ</h4>
+                    </div>
+                    <div class="Client-button HideOnVerticalView disabled" id="Show3dButton" onclick="ScrollInto(sceneContainer)">
+                        <h4 style="font-weight: bold; color:#212529">ПОКАЗАТЬ</h4>
+                    </div>
+                </div>
+
+            </div>
+        </div>
+
+        <div class="Scene3D_Area">
+            <!-- Сцена 3D -->
+            <div id="3D_Scene" class="Scene3D_container">
+                <h5 class="ContainerLabel" style="background-color: rgb(91,91,91)">Просмотр</h5>
+                
+            </div>
+            <div class="center">
+                <div id="LoadingModelsImg" hidden class="lds-ring"><div></div><div></div><div></div><div></div></div>
+            </div>
+        </div>
+    </div>
+
+    <div id="Modal" class="modal fade">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h4 class="modal-title">Отправить заявку</h4>
+                    <div class="modal__close-button" data-dismiss="modal">&times;</div>
+                </div>
+                <div class="modal-body">
+                    <div class="d-flex text-left" style="width:100%; flex-direction: column;">
+
+
+                        <div class="modal-row border-bottom"><p style="white-space: nowrap; user-select:none; font-weight:700;">Артикул собранного сиденья: </p> <label id="summaryCodeLabel"></label>  </div>
+                        <div class="modal-row">
+                            <p style="user-select:none;">
+                                Пожалуйста оставьте своё Имя, а также Номер телефона или E-Mail чтобы мы могли связаться с Вами.
+                            </p>
+                        </div>
+
+                        <div class="modal-row"><p style="white-space: nowrap; user-select:none; font-weight:700; margin-bottom:5px; margin-top:10px">Имя: </p> <input class="w-100" type="text" id="contactName" autocomplete="on" placeholder="Введите имя" onchange="ValidateContacts(contactName.value, contactEmail.value, contactTel.value)" /> </div>
+                        <div class="modal-row error d-none" id="nameInputError"></div>
+
+                        <div class="modal-row"><p style="white-space: nowrap; user-select:none; font-weight:700; margin-bottom:5px; margin-top:10px">Номер телефона: </p> <input class="w-100" type="tel" id="contactTel" autocomplete="on" placeholder="+7 (___) ___-__-__" onchange="ValidateContacts(contactName.value, contactEmail.value, contactTel.value)" /> </div>
+                        <div class="modal-row error d-none" id="telInputError"></div>
+
+                        <div class="modal-row"><p style="white-space: nowrap; user-select: none; font-weight: 700; margin-bottom:5px; margin-top:10px">E-Mail: </p> <input class="w-100" id="contactEmail" autocomplete="on" placeholder="_@@_" onchange="ValidateContacts(contactName.value, contactEmail.value, contactTel.value)" /> </div>
+                        <div class="modal-row error d-none" id="emailInputError"></div>
+
+                        <div class="Client-button disabled" style="height:40px; margin-top:10px; margin-bottom:10px" id="SendConfirmButton">
+                            <h4 style="font-weight: 600; color:#212529">Отправить</h4>
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <div class="d-flex text-left" style="width:100%; flex-direction: column;">
+                        <div class="modal-row border-bottom">
+                            <p style="user-select:none;">
+                                Контакты для связи:
+                            </p>
+                        </div>
+                        <div class="modal-row"><p style="user-select:none; font-weight:700;">Адрес:  <p> <p>улица Чапаева, 39/22лит2А Берёзовский, Свердловская область, Россия</p>   </div>
+                        <div class="modal-row"><p style="user-select:none; font-weight:700;">Номер телефона:  </p> <p>+7 (922) 181-37-36</p>  </div>
+                        <div class="modal-row"><p style="user-select:none; font-weight:700;">E-Mail:  </p> <a href="mailto:sevada-ek@mail.ru">sevada-ek@mail.ru</a>   </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+
+    <div id="modalInfo" class="modal fade">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h4 class="modal-title" id="modalInfoTitle"></h4>
+                    <div class="modal__close-button" data-dismiss="modal">&times;</div>
+                </div>
+                <div class="modal-body">
+                    <div class="d-flex text-left" style="width:100%; flex-direction: column;">
+                        <div class="modal-row">
+                            <p id="modalInfoDescription">
+                            </p>
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-footer">
+
+
+                </div>
+            </div>
+
+        </div>
+    </div>
+
+
+</div>
+
+
+@section scripts{
+
+
+    <script src="~/js/three.min.js"></script>
+    <script src="~/js/GLTFLoader.js"></script>
+    <script src="~/js/OrbitControls.js"></script>
+    <script src="~/js/jquery.inputmask.min.js"></script>
+    <script src="~/js/AkaLinq.js"></script>
+    <script src="~/js/3D.js"></script>
+
+
+    <script type="text/javascript">
+        let started = false;
+        let avaliableModsLoaded = false;
+
+        let selectedSeat;
+        let selectedMods = [];
+        let summaryCode = '';
+
+        let emailValid = false;
+        let nameValid = false;
+        let telValid = false;
+
+        var sceneContainer = document.getElementById('3D_Scene');
+        init3Dscene(sceneContainer);
+
+        var avaliableModsContainer = document.getElementById('AvaliableMods');
+        var optionsArea = document.getElementById('OptionsArea');
+        var $request;
+
+        //Выбор сиденья
+        function SelectSeat(seat) {
+            if (!drag || !started) {
+                if (started) ScrollInto(optionsArea);
+
+                if (loadSeat(seat) == true) {
+                    selectedSeat = seat;
+                    avaliableModsContainer.innerHTML = '';
+                    GetAvaliableMods(seat.id);
+                    $("#SendStartButton").removeClass("disabled");
+                    $("#Show3dButton").removeClass("disabled");
+
+                }
+            }
+        }
+
+        //Подсветка выбранного сиденья
+        function HighLight(element) {
+            if (!drag) {
+                $('#sliderItems div img').each(function () {
+                    this.classList.remove('selected');
+                })
+                element.classList.add('selected');
+            }
+        }
+
+        //Обновление списка доступных модификаций
+        function GetAvaliableMods(seatId) {
+            LoadingAvaliableModsImg.hidden = false;
+            avaliableModsLoaded = false;
+
+           if ($request != null) {
+               $request.abort();
+               $request = null;
+           }
+
+           let formData = new FormData();
+           formData.append("seatId", seatId);
+
+           $request = $.ajax(
+               {
+                   url: "/Constructor/GetAvaliableMods",
+                   data: formData,
+                   processData: false,
+                   contentType: false,
+                   type: "POST",
+                   success: function (mods) {
+                       LoadingAvaliableModsImg.hidden = true;
+                       avaliableModsLoaded = true;
+
+                       //Типы модификаций
+                       let uniqueTypeNames = Array.from(new Set(mods.map((o) => o.type.name)));
+                       let optionblocks = '';
+
+                       //Для каждого типа - выпадающий список
+                       $.each(uniqueTypeNames, function (i, typeName) {
+
+                           let modsOfType = where(mods, function (mod) { return mod.type.name === typeName })
+                           let optionsString = '';
+
+                           for (let i = 0; i < modsOfType.length; i++) {
+                               optionsString += "<option value='" + JSON.stringify(modsOfType[i]) + "'>" + modsOfType[i].name + '</option>';
+                           }
+                           var select = '<div class="infobuttonContainer"><select id="' + typeName + 'select' +'" class="DropDownSelect" onchange="ChangeMod(this.options[this.selectedIndex].value,' + "'" + typeName + "'" + ')">' +
+                               "<option value='" + JSON.stringify(null) + "'>Нет</option>" + optionsString + '</select ></div>';
+                           var optionblock = '<div class="Option">' +
+                               '<label class="OptionTypeLabel">' + typeName + '</label>' + select + '</div>';
+
+                           optionblocks += optionblock;
+                       });
+
+                       avaliableModsContainer.innerHTML = optionblocks;
+                   }
+               }
+           );
+        }
+
+
+        //Изменение модификаций
+        function ChangeMod(modJSON, typeName) {
+
+            let mod = JSON.parse(modJSON);
+
+
+            if (mod?.description != null) {
+
+                let placeholder = document.createElement("div");
+
+                let infobuttonString = '<div class="infobutton" id="' + typeName + 'infobutton">'+ 'i' + '</div>';
+                //let infobuttonString = '<span class="mytooltip" id="' + typeName + 'infobutton" data-text="'+ (mod.description ?? '') + '">' + 'i' + '</span>';
+
+                placeholder.innerHTML = infobuttonString;
+                let infobuttonNode = placeholder.firstElementChild;
+
+                let infobutton = document.getElementById(typeName + "infobutton");
+                infobutton?.parentNode.removeChild(infobutton);
+                document.getElementById(typeName + "select").before(infobuttonNode);
+
+                $('#' + typeName + 'infobutton').click(function () {
+                    $("#modalInfo").modal('show');
+                    $("#modalInfoTitle").text(mod.type.name + ': ' + mod.name.toLowerCase());
+                    $("#modalInfoDescription").text(mod.description);
+
+                    console.log("sdasda");
+                });
+
+            }
+            else {
+                let infobutton = document.getElementById(typeName + "infobutton");
+                infobutton?.parentNode.removeChild(infobutton);
+            }
+
+
+            if (mod == null) {
+
+                //Удаляю мод данного типа из выбранных
+                let modOfType = where(selectedMods, function (mod) { return mod.type.name === typeName })[0];
+                selectedMods.splice(selectedMods.indexOf(modOfType), 1);
+
+                //Удаляю мод со сцены
+                removeMod(typeName);
+            }
+            else {
+
+                //Добавляю мод данного типа в выбранные
+                selectedMods.push(mod);
+
+                //Удаляю мод со сцены
+                loadMod(mod);
+            }
+
+            //console.log('Выбранные модификации');
+            //console.log(selectedMods);
+
+        }
+
+        String.prototype.insert = function (index, string) {
+            if (index > 0) {
+                return this.substring(0, index) + string + this.substr(index);
+            }
+
+            return string + this;
+        };
+
+
+        let title = document.getElementById('title');
+
+        function ScrollInto(element) {
+            let yOffset = title.offsetHeight;
+
+            let y = element.getBoundingClientRect().top + window.pageYOffset - yOffset;
+
+            window.scrollTo({ top: y, behavior: 'smooth' });
+        }
+
+
+
+        let drag = false;
+
+        document.addEventListener(
+            'mousedown', () => drag = false);
+
+        document.addEventListener(
+            'mousemove', () => drag = true);
+
+
+        $('#SendStartButton').click(function () {
+            $("#Modal").modal('show');
+            RefreshSummaryCode(selectedSeat.id, selectedMods);
+        });
+
+
+        $('#SendConfirmButton').click(function () {
+            SendOrderRequest(summaryCode, contactName.value, contactEmail.value, contactTel.value);
+        });
+
+
+        function SendOrderRequest(summaryCode, contactName, contactEmail, contactTel) {
+            $.post("/Constructor/SendOrderRequest", {
+                summaryCode: summaryCode,
+                contactName: contactName,
+                contactEmail: contactEmail,
+                contactTel: contactTel
+            }).done(function () {
+
+            });
+        }
+
+        function RefreshSummaryCode(seatId, mods) {
+            $.post("/Constructor/GetSummaryCode", {
+                seatId: seatId,
+                mods: mods,
+            }).done(function (data) {
+                summaryCode = data;
+                document.getElementById('summaryCodeLabel').textContent = data;
+            });
+        }
+
+        function ValidateContacts(name, email, tel) {
+            $.post("/Constructor/ValidateContacts", { name: name, email: email, tel:tel }).done(function (errors) {
+
+                document.getElementById('nameInputError').textContent = errors[0];
+                document.getElementById('emailInputError').textContent = errors[1];
+                document.getElementById('telInputError').textContent = errors[2];
+
+                if (errors[0] != null) {
+                    $("#nameInputError").removeClass("d-none");
+                    nameValid = false;
+                }
+                else {
+                    $("#nameInputError").addClass("d-none");
+                    nameValid = true;
+                }
+
+                if (errors[1] != null) {
+                    $("#emailInputError").removeClass("d-none");
+                    emailValid = false;
+                }
+                else {
+                    $("#emailInputError").addClass("d-none");
+                    emailValid = true;
+                }
+
+                if (errors[2] != null) {
+                    $("#telInputError").removeClass("d-none");
+                    telValid = false;
+                }
+                else {
+                    $("#telInputError").addClass("d-none");
+                    telValid = true;
+                }
+
+                RefreshSendButton();
+            });
+        }
+
+        function RefreshSendButton() {
+
+            console.log(nameValid);
+            console.log(emailValid);
+            console.log(telValid);
+
+            if (nameValid && ((emailValid && contactTel.value == '') || (telValid && contactEmail.value == '') || (emailValid && telValid))) {
+                $("#SendConfirmButton").removeClass("disabled");
+            } else {
+                $("#SendConfirmButton").addClass("disabled");
+            }
+        }
+
+
+        $("#contactTel").inputmask({ "mask": "+7 (999) 999-99-99" });
+
+        $("#contactEmail").inputmask({
+            mask: "*{1,20}[.*{1,20}][.*{1,20}][.*{1,20}]@@*{1,20}[.*{2,6}][.*{1,2}]",
+            greedy: false,
+            onBeforePaste: function (pastedValue, opts) {
+                pastedValue = pastedValue.toLowerCase();
+                return pastedValue.replace("mailto:", "");
+            },
+            definitions: {
+                '*': {
+                    validator: "[0-9A-Za-z_-]",
+                    cardinality: 1,
+                    casing: "lower"
+                }
+            }
+        });
+
+        //После загрузки всех скриптов:
+        document.addEventListener('DOMContentLoaded', function () {
+
+            //Загрузка слайдера
+            var elms = document.querySelectorAll('.slider');
+            for (var i = 0, len = elms.length; i < len; i++) {
+                new ChiefSlider(elms[i], {
+                    loop: true,
+                    autoplay: false,
+                    interval: 3000,
+                    swipe: true,
+                    refresh: true
+                });
+            }
+
+            //Выбор первого и прокрутка в начало страницы
+            SelectSeat(@(Model.Length > 0 ? Html.Raw(Json.Serialize(Model[0])):""));
+            started = true;
+        });
+
+
+    </script>
+
+
+
+}
